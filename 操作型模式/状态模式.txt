@@ -1,0 +1,179 @@
+//×´Ì¬Ä£Ê½µÄÒâÍ¼ÊÇ½«±íÊ¾¶ÔÏó×´Ì¬µÄÂß¼­·ÖÉ¢µ½´ú±í×´Ì¬µÄ²»Í¬ÀàÖĞ
+//×´Ì¬Ä£Ê½ÔÊĞí¶ÔÏóÔÚÄÚ²¿×´Ì¬·¢Éú¸Ä±äÊ±¸Ä±äËüµÄĞĞÎª£¬¶ÔÏóĞŞ¸ÄÁËËüµÄÀà£¿
+//Ö÷Òª½ÇÉ«£º
+//1¡£ContextÀà£º»·¾³Àà£¬¿ÉÒÔ°üº¬Ò»Ğ©ÄÚ²¿×´Ì¬
+//2¡£StateÀà£º³éÏó×´Ì¬Àà£¬state¶¨ÒåÁËÒ»¸öËùÓĞ¾ßÌå×´Ì¬µÄ¹²Í¬½Ó¿Ú£¬ÈÎºÎ×´Ì¬¶¼ÊµÏÖÕâ¸öÏàÍ¬µÄ½Ó¿Ú
+//3¡£ConcreteStateÀà£º¾ßÌå×´Ì¬£¬ÓÃÓÚ´¦ÀíÀ´×ÔContextµÄÇëÇó£¬Ã¿Ò»¸öConcreteState¶¼Ìá¹©ÁËËü¶Ô×Ô¼ºÇëÇóµÄÊµÏÖ
+interface State{
+    public void bookRoom();
+    public void unsubscribeRoom();
+    public void checkInRoom();
+    public void checkOutRoom();
+}
+
+class Room{
+    State freeTimeState;//¿ÕÏĞ×´Ì¬
+    State checkInState;//Èë×¡×´Ì¬
+    State bookedState;//Ô¤¶¨×´Ì¬
+    State state;
+    public Room(){
+        freeTimeState=new FreeTimeState(this);
+        checkInState=new CheckInState(this);
+        bookedState=new BookedState(this);
+
+        state=freeTimeState;
+    }
+
+    public void bookRoom(){
+        state.bookRoom();
+    }
+
+    public void unsubscribeRoom(){
+        state.unsubscribeRoom();
+    }
+
+    public void checkInRoom(){
+        state.checkInRoom();
+    }
+
+    public void checkOutRoom(){
+        state.checkOutRoom();
+    }
+
+    public String toString(){
+        return "¸Ã·¿¼äµÄ×´Ì¬ÊÇ£º"+getState().getClass().getName();
+    }
+
+    public State getState(){
+        return state;
+    }
+
+    public void setState(State state){
+        this.state=state;
+    }
+
+    public State getFreeTimeState(){
+        return freeTimeState;
+    }
+
+    public void setFreeTimeState(State state){
+        this.freeTimeState=state;
+    }
+
+    public State getCheckInState(){
+        return checkInState;
+    }
+
+    public void setCheckInState(State state){
+        this.checkInState=state;
+    }
+
+    public State getBookedState(){
+        return bookedState;
+    }
+
+    public void setBookedState(State state){
+        this.bookedState=state;
+    }
+
+}
+
+class BookedState implements State{
+
+    //Èë×¡»òÍË·¿
+    Room hotelManagement;
+    public BookedState(Room hotelManagement){
+        this.hotelManagement=hotelManagement;
+    }
+    @Override
+    public void bookRoom() {
+        System.out.println("¸Ã·¿¼äÒÑ¾­¸øÔ¤¶©ÁËÿÿ");
+    }
+
+    @Override
+    public void unsubscribeRoom() {
+        System.out.println("ÄúÒÑ¾­³É¹¦ÍË¶©ÁËÿÿ");
+        hotelManagement.setState(hotelManagement.getFreeTimeState());
+    }
+
+    @Override
+    public void checkInRoom() {
+        System.out.println("ÄúÒÑ¾­³É¹¦Èë×¡ÁËÿÿ");
+        hotelManagement.setState(hotelManagement.getCheckInState());
+    }
+
+    @Override
+    public void checkOutRoom() {
+
+    }
+}
+class CheckInState implements State{
+
+    Room hotelManagement;
+    public CheckInState(Room hotelManagement){
+        this.hotelManagement=hotelManagement;
+    }
+    @Override
+    public void bookRoom() {
+        System.out.println("¸Ã·¿¼äÒÑ¾­Èë×¡ÁËÿÿ");
+    }
+
+    @Override
+    public void unsubscribeRoom() {
+    }
+
+    @Override
+    public void checkInRoom() {
+        System.out.println("¸Ã·¿¼äÒÑ¾­¸øÔ¤¶©ÁËÿÿ");
+
+    }
+
+    @Override
+    public void checkOutRoom() {
+        System.out.println("ÄúÒÑ¾­³É¹¦ÍË·¿ÿÿ");
+        hotelManagement.setState(hotelManagement.getFreeTimeState());
+    }
+}
+class FreeTimeState implements State{
+
+    Room hotelManagement;
+    public FreeTimeState(Room hotelManagement){
+        this.hotelManagement=hotelManagement;
+    }
+    @Override
+    public void bookRoom() {
+        System.out.println("ÄúÒÑ¾­³É¹¦Ô¤¶©ÁËÿÿ");
+        hotelManagement.setState(hotelManagement.getBookedState());//×´Ì¬±ä³ÉÒÑÔ¤¶©
+    }
+
+    @Override
+    public void unsubscribeRoom() {
+
+    }
+
+    @Override
+    public void checkInRoom() {
+        System.out.println("ÄúÒÑ¾­³É¹¦Èë×¡ÁËÿÿ");
+        hotelManagement.setState(hotelManagement.getCheckInState());
+    }
+
+    @Override
+    public void checkOutRoom() {
+
+    }
+}
+public class Main{
+    public static void main(String[] args){
+        Room[] rooms=new Room[2];
+        for(int i=0;i<rooms.length;++i)
+        {
+            rooms[i]=new Room();
+        }
+
+        //µÚÒ»¼ä·¿
+        rooms[0].bookRoom();
+        rooms[0].checkInRoom();
+        rooms[0].bookRoom();
+        System.out.println(rooms[0]);
+    }
+}

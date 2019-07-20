@@ -1,0 +1,62 @@
+//桥接模式
+//桥接模式的意图是将抽象与抽象方法的实现相互分离来实现解藕，以便独立的变化
+
+//接口可以继承接口，抽象类可以实现接口，抽象类继承实体类
+interface Implementor{
+    public void operation();
+}
+
+class ConcreateImplementorA implements Implementor{
+
+    @Override
+    public void operation() {
+        System.out.println("this is A's operation...");
+    }
+}
+
+class ConcreateImplementorB implements Implementor{
+
+    @Override
+    public void operation() {
+        System.out.println("this is B's operation...");
+    }
+}
+
+class Abstraction{
+    private Implementor implementor;
+    public Implementor getImplementor(){
+        return implementor;
+    }
+
+    public void setImplementor(Implementor implementor){
+        this.implementor=implementor;
+    }
+
+    protected void operation(){
+        implementor.operation();
+    }
+}
+
+class RefinedAbstraction extends Abstraction{
+    protected void operation(){
+        super.getImplementor().operation();
+    }
+}
+
+
+public class Main {
+
+    public static void main(String[] args) {
+        Abstraction abstraction=new RefinedAbstraction();
+
+        //调用第一个实现类
+        //实现类可作为接口的参数
+        abstraction.setImplementor(new ConcreateImplementorA());
+        abstraction.operation();
+
+        abstraction.setImplementor(new ConcreateImplementorB());
+        abstraction.operation();
+    }
+}
+
+

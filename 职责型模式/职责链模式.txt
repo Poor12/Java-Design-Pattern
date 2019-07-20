@@ -1,0 +1,122 @@
+//职责链模式的目的是通过给予多个对象处理请求的机会，以解除请求的发送者与接受者之间的耦合
+//将能够处理同一类请求的对象连成一条链，使这些对象都有机会处理请求，所提供的请求沿着链传递，从而避免请求的发送者和接受者之间的耦合关系
+//场景：1。打牌时，轮流出牌 2。接力赛跑 3。请假审批 4。公文审批
+//handler定义一个处理请求的接口，concretehandler表示具体的处理者
+
+//实现方式：1。链表模式 2。集合模式
+//三种实现方式：1。servlet的filter 2。dubbo中的filter 3。mybatis的plugin
+//请假为例
+class LeaveRequest{
+    private String empName;//请假人
+    private int leaveDays;//请假天数
+    private String reason;//理由
+    public LeaveRequest(String empName,int leaveDays,String reason){
+        this.empName=empName;
+        this.leaveDays=leaveDays;
+        this.reason=reason;
+    }
+    public String getEmpName(){
+        return empName;
+    }
+    public void setEmpName(String empName){
+        this.empName=empName;
+    }
+    public int getLeaveDays(){
+        return leaveDays;
+    }
+    public void setLeaveDays(int leaveDays){
+        this.leaveDays=leaveDays;
+    }
+    public String getReason(){
+        return reason;
+    }
+    public void setReason(String reason){
+        this.reason=reason;
+    }
+}
+
+abstract class Leader{
+    protected String name;
+    protected Leader nextLeader;
+    public Leader(String name){
+        this.name=name;
+    }
+    public void setNextLeader(Leader nextLeader){
+        this.nextLeader=nextLeader;
+    }
+    public abstract void handlerRequest(LeaveRequest leader);
+}
+
+//主任
+class Director extends Leader{
+    public Director(String name){
+        super(name);
+    }
+
+    @Override
+    public void handlerRequest(LeaveRequest leader) {
+        if(leader.getLeaveDays()<=3){
+            System.out.println("请假人："+leader.getEmpName()+",天数："+leader.getLeaveDays()+",理由："+leader.getReason());
+            System.out.println("审批人："+this.name+" 主任，审批通过");
+        }
+        else{
+            if(this.nextLeader!=null){
+                this.nextLeader.handlerRequest(leader);
+            }
+        }
+
+    }
+
+}
+
+class Manager extends Leader{
+    public Manager(String name){
+        super(name);
+    }
+
+    @Override
+    public void handlerRequest(LeaveRequest leader) {
+        if(leader.getLeaveDays()<=10){
+            System.out.println("请假人："+leader.getEmpName()+",天数："+leader.getLeaveDays()+",理由："+leader.getReason());
+            System.out.println("审批人："+this.name+" 经理，审批通过");
+        }
+        else{
+            if(this.nextLeader!=null){
+                this.nextLeader.handlerRequest(leader);
+            }
+        }
+
+    }
+
+}
+
+class GeneralManager extends Leader{
+    public GeneralManager(String name){
+        super(name);
+    }
+
+    @Override
+    public void handlerRequest(LeaveRequest leader) {
+        if(leader.getLeaveDays()<=30){
+            System.out.println("请假人："+leader.getEmpName()+",天数："+leader.getLeaveDays()+",理由："+leader.getReason());
+            System.out.println("审批人："+this.name+" 总经理，审批通过");
+        }
+        else{
+            System.out.println("申请不通过");
+        }
+
+    }
+
+}
+public class Main {
+    public static void main(String[] args) {
+        Leader a=new Director("张三");
+        Leader b=new Manager("李四");
+        Leader c=new GeneralManager("王五");
+        a.setNextLeader(b);
+        b.setNextLeader(c);
+        LeaveRequest request=new LeaveRequest("小明",5,"旅游");
+        a.handlerRequest(request);
+
+    }
+}

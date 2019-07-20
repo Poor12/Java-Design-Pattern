@@ -1,0 +1,181 @@
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+//适配器模式的意图在于，使用不同接口的类所提供的服务为客户端提供它所期望的接口
+//类的适配器，通过子类进行适配，在类的适配器中，新的适配类实现了需要的接口，并继承自现有的类
+interface RequiredInterface{
+    void requiredMethod();//方法的定义
+}
+class RequiredClass{
+    protected int Simtime=2;
+    public RequiredClass(){
+        Simtime=3;
+    }
+    void requiredMethod(){//方法的定义
+
+    }
+    void requiredMethodUsingV() {
+
+    }
+
+}
+class ExistingClass{
+    public ExistingClass(){
+
+    }
+    void usefulMethod(){
+        System.out.println("this is a useful method");
+    }
+    void usefulMethod(int i)
+    {
+        System.out.println("this is method "+i);
+    }
+
+}
+class NewClass extends ExistingClass implements RequiredInterface
+{
+    public NewClass(){
+        super();
+    }
+    @Override
+    public void requiredMethod() {
+        usefulMethod();
+    }
+}
+
+//对象适配器
+//当你需要适配的一组方法并非被定义在接口时，这种方式不奏效了，可以创建对象适配器，它使用了委派
+class NewClass2 extends RequiredClass
+{
+    private ExistingClass ec;
+    NewClass2(ExistingClass e){
+        super();
+        ec=e;
+        Simtime=4;
+    }
+
+    @Override
+    void requiredMethod() {
+        ec.usefulMethod();
+    }
+
+    @Override
+    void requiredMethodUsingV() {
+        ec.usefulMethod(Simtime);
+    }
+}
+//对象适配器比类适配器更加脆弱的原因：
+//1。没有接口的规范，由于RequiredClass的变化可能在运行时出现编译时无法检测到的问题
+//2。NewClass2的方法借助于访问其超类的变量
+
+//JTable对数据的适配
+//在表中显示数据时，通常会用到对象适配器，Swing提供了JTable控件用以显示表，显然该控件的设计者并不知道你所显示的数据，它并没有硬将数据接口塞到控件中，而是定义TableModel接口
+//JTable的实现使用了该接口，然后你可以提供一个适配器，将数据转换成TableModel
+//只要适配器对象必须要使用抽象类，就必须使用对象适配器
+
+class Rocket{
+    private String name;
+    private double price;
+    private double apogee;
+    public Rocket(String name,double price,double apogee){
+        this.name=name;
+        this.price=price;
+        this.apogee=apogee;
+    }
+    public String getName(){
+        return this.name;
+    }
+    public double getPrice()
+    {
+        return this.price;
+    }
+    public double getApogee()
+    {
+        return this.apogee;
+    }
+
+}
+class RocketTableModel extends AbstractTableModel
+{
+    protected Rocket[] rockets;
+    protected String[] columnNames=new String[]{"Name","Price","Apogee"};
+    public RocketTableModel(Rocket[] rockets)
+    {
+        this.rockets=rockets;
+    }
+    public int getColumnCount()
+    {
+        return columnNames.length;
+    }
+    public String getColumnName(int i)
+    {
+        return columnNames[i];
+    }
+    public int getRowCount(){
+        return rockets.length;
+    }
+    public Object getValueAt(int row,int col)
+    {
+        switch (col)
+        {
+            case 0:
+                return rockets[row].getName();
+            case 1:
+                return rockets[row].getPrice();
+            case 2: {
+                return new Double(rockets[row].getApogee());
+            }
+            default:
+                return null;
+        }
+    }
+}
+class ShowRocketTable{
+    public static void display(Component c,String title)
+    {
+        JFrame frame=new JFrame(title);
+        frame.getContentPane().add(c);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+    }
+    public static RocketTableModel getRocketTable(){
+        Rocket r1=new Rocket("Shooter",3.95,50.0);
+        Rocket r2=new Rocket("Orbit",29.03,5000);
+        return new RocketTableModel(new Rocket[]{r1,r2});
+    }
+    public static void setFonts()
+    {
+        Font font=new Font("Dialog",Font.PLAIN,18);
+        UIManager.put("Table.font",font);
+        UIManager.put("TableHeader.font",font);
+    }
+}
+public class Main {
+
+    public static void main(String[] args) {
+        NewClass ncc=new NewClass();
+        ncc.requiredMethod();
+
+        ExistingClass e=new ExistingClass();
+        NewClass2 nc=new NewClass2(e);
+        //先构造基类，再构造子类
+        nc.requiredMethod();
+        nc.requiredMethodUsingV();
+
+        ShowRocketTable.setFonts();
+        //对象识别器
+        JTable table=new JTable(ShowRocketTable.getRocketTable());
+        table.setRowHeight(36);
+        JScrollPane pane=new JScrollPane(table);
+        pane.setPreferredSize(new java.awt.Dimension(300,100));
+        ShowRocketTable.display(pane,"Rockets");
+    }
+}
+
+

@@ -1,0 +1,179 @@
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+//观察者模式 将对象从依赖于它的对象中解藕
+//观察者模式的意图是在多个对象之间定义一对多的依赖关系，当一个对象的状态发生改变时会通知依赖于它的对象，并根据新状态做出反应
+
+//将对象从依赖于它的对象中解藕
+//一个目标物件管理所有相依于它的观察者物件，并且在它本身状态改变时主动发出通知，通过呼叫各观察者所提供的方法来实现
+//主要角色：1。主题接口subject：管理所有的观察者以及数据变化后通知观察者 2。观察者接口observer：接受自己订阅的主题发布的数据 3。主题实现类 4。观察者实现类
+//使用场景：报社的业务就是出版报纸，客户订阅报社，那么只要有新的报纸出版就会给订阅者送来，当你不想订阅时取消就可以了，不会再收到通知，报社提供订阅与取消订阅的入口
+//class Newspaper implements Serializable{
+//    private LocalDateTime reportTime;
+//    private String data;
+//
+//    public LocalDateTime getReportTime(){
+//        return reportTime;
+//    }
+//
+//    public void setReportTime(LocalDateTime localDateTime){
+//        this.reportTime=localDateTime;
+//    }
+//
+//    public String getData(){
+//        return data;
+//    }
+//
+//    public void setData(String data){
+//        this.data=data;
+//    }
+//
+//    @Override
+//    public String toString() {
+//        return "Newspaper{"+"reportTime="+reportTime+", data='"+data+'\''+'}';
+//    }
+//}
+//
+////主题
+//interface NewspaperSubject{
+//    void registerObserver(Observer observer);
+//
+//    void removeObserver(Observer observer);
+//
+//    void notifyObservers(Newspaper data);
+//}
+//
+////实现主题
+//class ChinaNewspaperSubject implements NewspaperSubject{
+//
+//    private ReentrantReadWriteLock readWriteLock=new ReentrantReadWriteLock();
+//
+//    private List<Observer> observers;
+//
+//    public ChinaNewspaperSubject(){
+//        this.observers=new ArrayList<>();
+//    }
+//
+//    public void setChange(){
+//        Newspaper newspaper=new Newspaper();
+//        newspaper.setReportTime(LocalDateTime.now());
+//        newspaper.setData("发布新闻");
+//        notifyObservers(newspaper);
+//    }
+//    @Override
+//    public void registerObserver(Observer observer) {
+//        ReentrantReadWriteLock.WriteLock writeLock=readWriteLock.writeLock();
+//        try{
+//            writeLock.lock();
+//            observers.add(observer);
+//        }finally {
+//            writeLock.unlock();
+//        }
+//    }
+//
+//    @Override
+//    public void removeObserver(Observer observer) {
+//        ReentrantReadWriteLock.WriteLock writeLock=readWriteLock.writeLock();
+//        try{
+//            writeLock.lock();
+//            observers.remove(observer);
+//        }finally {
+//            writeLock.unlock();
+//        }
+//    }
+//
+//    @Override
+//    public void notifyObservers(Newspaper data) {
+//        ReentrantReadWriteLock.ReadLock  readLock=readWriteLock.readLock();
+//        try{
+//            readLock.lock();
+//            observers.forEach(item->item.notice(data));
+//        }finally {
+//            readLock.unlock();
+//        }
+//    }
+//}
+//
+////定义观察者角色，也就是订阅者
+//interface Observer{
+//    void  notice(Newspaper data);
+//}
+//
+//class HonKongObserver implements Observer{
+//
+//    @Override
+//    public void notice(Newspaper data) {
+//        System.out.println("我收到报社的报纸了，内容是"+data.toString());
+//    }
+//}
+
+//JDK内置实现
+class  NumsObservable extends Observable{
+    public final static Integer ODD=1;
+    public final static Integer EVEN=2;
+
+    private int data=0;
+
+    public int getData(){
+        return data;
+    }
+
+    public void setData(int data){
+        this.data=data;
+        Integer flag=EVEN;
+        if((this.data&0x0001)==1){
+            flag=ODD;
+        }
+        setChanged();
+        notifyObservers(flag);
+    }
+}
+
+//奇数订阅者
+class OddObserver implements Observer {
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if(arg==NumsObservable.ODD){
+            NumsObservable numsObservable=(NumsObservable)o;
+            System.out.println("Data has changed to ODD number "+numsObservable.getData());
+        }
+    }
+}
+
+class EvenObserver implements Observer {
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if(arg==NumsObservable.EVEN){
+            NumsObservable numsObservable=(NumsObservable)o;
+            System.out.println("Data has changed to even number "+numsObservable.getData());
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+//        ChinaNewspaperSubject newspaperSubject=new ChinaNewspaperSubject();
+//        HonKongObserver honKongObserver=new HonKongObserver();
+//        newspaperSubject.registerObserver(honKongObserver);
+//        newspaperSubject.setChange();
+        
+        //Observable的劣势在于它是一个类，主题必须继承它，无法继承其他类，谷歌的Guava类的事件总线和Spring的事件传播有用到观察者模式
+        NumsObservable numsObservable=new NumsObservable();
+        OddObserver oddObserver=new OddObserver();
+        EvenObserver evenObserver=new EvenObserver();
+        numsObservable.addObserver(oddObserver);
+        numsObservable.addObserver(evenObserver);
+        numsObservable.setData(11);
+        numsObservable.setData(12);
+        numsObservable.setData(13);
+    }
+}

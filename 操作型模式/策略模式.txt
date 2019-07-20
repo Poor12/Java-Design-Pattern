@@ -1,0 +1,95 @@
+//策略模式的意图是将可互换的方法封装在各自独立的类中，并且让每个方法都实现公共的操作
+//针对一组算法，将每一个算法封装到具有共同接口的独立的类中，从而使得它们可以相互替换，使用策略模式可以把行为和环境分割开
+//主要角色：
+//1。抽象策略角色：策略类，通常由一个接口或者抽象类实现
+//2。具体策略角色：包装了相关的算法和行为
+//3。环境角色：持有一个策略类的引用，最终给客户端调用的，通过环境角色指定策略
+
+//抽象策略角色
+interface QuackBehavior{
+    void quack();
+}
+
+interface FlyBehavior{
+    void fly();
+}
+
+class FlyNoWay implements FlyBehavior{
+
+    @Override
+    public void fly() {
+        System.out.println("老司机带带我，我不会飞");
+    }
+}
+
+class FlyWithWings implements FlyBehavior{
+
+    @Override
+    public void fly() {
+        System.out.println("我会飞行，一飞冲天");
+    }
+}
+
+class Quack implements QuackBehavior{
+
+    @Override
+    public void quack() {
+        System.out.println("咕咕叫");
+    }
+}
+
+class MuteQuack implements QuackBehavior{
+
+    @Override
+    public void quack() {
+        System.out.println("我不会叫");
+    }
+}
+
+abstract class Duck{
+    FlyBehavior flyBehavior;
+    QuackBehavior quackBehavior;
+    public void performFly(){
+        flyBehavior.fly();
+    }
+    public void performQuack(){
+        quackBehavior.quack();
+    }
+    public abstract void display();
+    public void setFlyBehavior(FlyBehavior flyBehavior){
+        this.flyBehavior=flyBehavior;
+    }
+    public void setQuackBehavior(QuackBehavior quackBehavior){
+        this.quackBehavior=quackBehavior;
+    }
+
+}
+
+class MallarDuck extends Duck{
+
+    @Override
+    public void display() {
+        System.out.println("野鸭子");
+    }
+}
+
+class ModelDuck extends Duck{
+
+    @Override
+    public void display() {
+        System.out.println("模型鸭子");
+    }
+}
+
+public class Main{
+    public static void main(String[] args){
+        FlyBehavior flyBehavior=new FlyNoWay();
+        QuackBehavior quackBehavior=new MuteQuack();
+        Duck modelDuck=new ModelDuck();
+        modelDuck.setFlyBehavior(flyBehavior);
+        modelDuck.setQuackBehavior(quackBehavior);
+        modelDuck.display();
+        modelDuck.performFly();
+        modelDuck.performQuack();
+    }
+}

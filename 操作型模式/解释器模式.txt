@@ -1,0 +1,77 @@
+//解释器模式的意图是让你根据事先定义好的一系列组合规则，组合可执行对象
+//解释器模式主要角色：
+//1。抽象解释器：具体的解释任务由各个实现类完成
+//2。终结符表达式：实现与文法中的元素相关联的解释操作，通常一个解释器模式中只有一个终结表达式，但有多个示例，对应不同的终结符
+//3。非终结符表达式：文法中的每条规则对应于一个非终结表达式，非终结符表达式根据逻辑的复杂程度而增加，原则上每个文法规则都对应一个非终结符表达式
+//4。上下文：上下文环境类，包含解释器之外的全局信息
+//5。客户类
+interface Expression{
+    public boolean interpret(String context);
+}
+
+class TerminalExpression implements Expression{
+
+    private String data;
+
+    public TerminalExpression(String data){
+        this.data=data;
+    }
+    @Override
+    public boolean interpret(String context) {
+        if(context.contains(data)){
+            return true;
+        }
+        return false;
+    }
+}
+
+class OrExpression implements Expression{
+
+    private Expression expr1=null;
+    private Expression expr2=null;
+
+    public OrExpression(Expression expr1,Expression expr2){
+        this.expr1=expr1;
+        this.expr2=expr2;
+    }
+
+    @Override
+    public boolean interpret(String context) {
+        return expr1.interpret(context)||expr2.interpret(context);
+    }
+}
+
+class AndExpression implements Expression{
+
+    private Expression expr1=null;
+    private Expression expr2=null;
+
+    public AndExpression(Expression expr1,Expression expr2){
+        this.expr1=expr1;
+        this.expr2=expr2;
+    }
+
+    @Override
+    public boolean interpret(String context) {
+        return expr1.interpret(context) && expr2.interpret(context);
+    }
+}
+public class Main{
+    public static Expression getMaleExpression(){
+        Expression robert=new TerminalExpression("Robert");
+        Expression john=new TerminalExpression("John");
+        return new OrExpression(robert,john);
+    }
+
+    public static Expression getMarriedWomanExpression(){
+        Expression julie=new TerminalExpression("Julie");
+        Expression married=new TerminalExpression("married");
+        return new AndExpression(julie,married);
+    }
+    public static void main(String[] args){
+        Expression isMale=getMaleExpression();
+        Expression isMarriedWoman=getMarriedWomanExpression();
+        System.out.println("John is male? "+isMale.interpret("John"));
+        System.out.println("Julie is a married woman? "+isMarriedWoman.interpret("married Julie"));
+    }
+}

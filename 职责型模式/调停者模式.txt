@@ -1,0 +1,190 @@
+//调停者模式的意图是定义一个对象，封装一组对象的交互，从而降低对象间的耦合度，避免对象间的显式引用，并且可以独立地改变对象的行为
+//调停者模式的结构：
+//1。抽象调停者角色：定义出同事对象到调停者对象的接口
+//2。具体调停者角色：实现了抽象调停者所声明的事件方法
+//3。抽象同事类角色：定义调停者到同事对象的接口
+//4。具体同事类角色：继承抽象同事类，实现自己的业务
+
+//abstract class Colleague{
+//    private Mediator mediator;
+//
+//    public Colleague(Mediator mediator){
+//        this.mediator=mediator;
+//    }
+//
+//    public Mediator getMediator(){
+//        return mediator;
+//    }
+//}
+//
+//class ConcreteColleagueA extends Colleague{
+//    public ConcreteColleagueA(Mediator mediator){
+//        super(mediator);
+//    }
+//
+//    //在需要与其他同事通信时，通知调停者对象
+//    public void operation(){
+//        getMediator().changed(this);
+//    }
+//}
+//interface Mediator{
+//    public void changed(Colleague c);
+//}
+//
+//class ConcreteMediator implements Mediator{
+//
+//    private ConcreteColleagueA colleagueA;
+//    //private ConcreteColleagueB colleagueB;
+//
+//    public void setColleagueA(ConcreteColleagueA colleagueA){
+//        this.colleagueA=colleagueA;
+//    }
+//
+//    @Override
+//    public void changed(Colleague c) {
+//        //在某一同事类c发生变化时，通常与其他同事类交互
+//    }
+//}
+
+abstract class Colleague{
+    private  Mediator  mediator;
+
+    public Colleague(Mediator mediator){
+        this.mediator=mediator;
+    }
+
+    public Mediator getMediator(){
+        return mediator;
+    }
+}
+
+class CDDriver extends Colleague{
+    private String data="";
+
+    public CDDriver(Mediator mediator) {
+        super(mediator);
+    }
+
+    public String getData(){
+        return data;
+    }
+
+    public void readCD(){
+        this.data="One piece,海贼王我当定了";
+        getMediator().changed(this);
+    }
+}
+
+class CPU extends Colleague{
+    private String viedoData="";
+    private String soudData="";
+
+    public CPU(Mediator mediator) {
+        super(mediator);
+    }
+
+    public String getViedoData(){
+        return  viedoData;
+    }
+
+    public String getSoudData(){
+        return soudData;
+    }
+
+    public void executeData(String data){
+        String[] array=data.split(",");
+        this.viedoData=array[0];
+        this.soudData=array[1];
+        //通知主板，CPU完成工作
+        getMediator().changed(this);
+    }
+}
+
+class ViedoCard extends Colleague{
+    public ViedoCard(Mediator mediator){
+        super(mediator);
+    }
+
+    public void showData(String data){
+        System.out.println("您现在正在观看的是：  "+data);
+    }
+}
+
+class SoundCard extends Colleague{
+
+    public SoundCard(Mediator mediator) {
+        super(mediator);
+    }
+
+    public void soundData(String data){
+        System.out.println("画外音："+data);
+    }
+}
+
+interface Mediator{
+    public void changed(Colleague  c);
+}
+
+class MainBoard implements Mediator{
+
+    private CDDriver cdDriver=null;
+    private CPU cpu=null;
+    private ViedoCard viedoCard=null;
+    private SoundCard soundCard=null;
+
+    public void setCdDriver(CDDriver cdDriver){
+        this.cdDriver=cdDriver;
+    }
+
+    public void setCpu(CPU cpu){
+        this.cpu=cpu;
+    }
+
+    public void setViedoCard(ViedoCard viedoCard){
+        this.viedoCard=viedoCard;
+    }
+
+    public void setSoundCard(SoundCard soundCard){
+        this.soundCard=soundCard;
+    }
+
+    private void openCDDriverReadData(CDDriver cdDriver){
+        String data= cdDriver.getData();
+        cpu.executeData(data);
+    }
+
+    private void openCPU(CPU cpu){
+        String viedoData=cpu.getViedoData();
+        String soundData=cpu.getSoudData();
+        viedoCard.showData(viedoData);
+        soundCard.soundData(soundData);
+    }
+    @Override
+    public void changed(Colleague c) {
+        if(c instanceof CDDriver){
+            this.openCDDriverReadData((CDDriver)c);
+        }
+        else if(c instanceof CPU){
+            this.openCPU((CPU)c);
+        }
+    }
+}
+public class Main {
+    public static void main(String[] args) {
+        //调停者模式的优点，松散耦合 ，集中控制交互，多对多变多对一
+        //缺点，过度集中化
+        MainBoard mainBoard=new MainBoard();
+        CDDriver cdDriver=new CDDriver(mainBoard);
+        CPU cpu=new CPU(mainBoard);
+        ViedoCard viedoCard=new ViedoCard(mainBoard);
+        SoundCard soundCard=new SoundCard(mainBoard);
+
+        //调停者知道所有同事
+        mainBoard.setCdDriver(cdDriver);
+        mainBoard.setCpu(cpu);
+        mainBoard.setSoundCard(soundCard);
+        mainBoard.setViedoCard(viedoCard);
+
+        cdDriver.readCD();
+    }
+}

@@ -1,0 +1,75 @@
+//模板方法模式在一个方法中定义了一个算法骨架，并且final修饰防止子类重写，方法中包含一些抽象方法，也就是将一些步骤延迟到子类实现，使得在不改变算法结构的情况下，重新定义算法中的某些步骤
+//模式实现：
+//1。模版方法，一个模版方法是定义在抽象类中的，把基本操作方法组合在一起组成一个总算法的方法，定义在抽象类，并由子类继承
+//2。基本方法，是模版方法的组成部分，分为三种：抽象方法、具体方法和钩子方法
+//抽象方法，一个抽象方法由抽象类声明、由其子类继承。
+//具体方法，抽象类或具体类声明，子类可以覆盖或直接继承
+//钩子方法，抽象类或具体类声明并实现，子类加以扩展，通常在父类的实现是一个空实现，并以该空实现作为方法的默认实现
+
+//制作饮料的步骤：1。把水煮沸 2。用沸水冲泡饮料 3。把饮料倒进辈子 4。加不同的配料
+
+abstract class AbstractBeverage{
+    final void prepareRecipe(){
+        boilWater();
+        brew();
+        pourInCup();
+        if(customerWantsCondiments()){
+            addCondiments();
+        }
+    }
+
+    //hook
+    boolean customerWantsCondiments(){
+        return true;
+    }
+
+    //由子类定核心
+    protected abstract void addCondiments();
+
+    protected abstract void brew();
+
+    public void pourInCup(){
+        System.out.println("倒入杯子中.....");
+    }
+
+    public void boilWater(){
+        System.out.println("把水煮沸.....");
+    }
+
+}
+
+class Tea extends AbstractBeverage{
+
+    private boolean addCondiments=true;
+
+    @Override
+    protected void addCondiments() {
+        System.out.println("添加柠檬.....");
+    }
+
+    @Override
+    protected void brew() {
+        System.out.println("秘制泡茶方式放入茶叶");
+    }
+
+    @Override
+    boolean customerWantsCondiments() {
+        return addCondiments;
+    }
+
+    public boolean isAddCondiments(){
+        return addCondiments;
+    }
+
+    public void setAddCondiments(boolean add){
+        this.addCondiments=add;
+    }
+
+}
+public class Main {
+    public static void main(String[] args) {
+        Tea tea=new Tea();
+        tea.setAddCondiments(true);
+        tea.prepareRecipe();
+    }
+}

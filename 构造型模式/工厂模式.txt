@@ -1,0 +1,45 @@
+interface Shape{
+    void draw();
+}
+
+class Rectangle implements Shape{
+
+    @Override
+    public void draw() {
+        System.out.println("Inside Rectangle::draw()");
+    }
+}
+
+class Square implements Shape{
+
+    @Override
+    public void draw() {
+        System.out.println("Inside Square::draw()");
+    }
+}
+
+
+class ShapeFactory {
+    public Shape getShape(String shape) {
+        if (shape == null) {
+            return null;
+        }
+        if (shape.equalsIgnoreCase("rectangle")) {
+            return new Rectangle();
+        } else if (shape.equalsIgnoreCase("square")) {
+            return new Square();
+        }
+        return null;
+    }
+}
+
+
+
+public class Main{
+    public static void main(String[] args){
+        ShapeFactory sf=new ShapeFactory();
+        Shape s1=sf.getShape("square");
+        s1.draw();
+
+    }
+}

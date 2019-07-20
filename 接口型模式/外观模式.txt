@@ -1,0 +1,201 @@
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+//外观模式是为子系统提供一个接口，便于它的使用
+
+//外观类可能全是静态方法，在UML中，这样的类称为工具类
+//示例类与外观类的区别：
+//1。示例通常是一个单独运行的应用程序，而外观不是
+//2。示例通常包含了样本数据，而外观没有
+//3。外观通常是可配置的，示例不是
+//4。外观的意图是为了重用，示例不是
+//5。外观用在产品代码中，而示例不是
+
+//Java较少运用外观模式。
+
+//showflight类需要展示一颗哑弹将在何处落地，需要实现三个功能：1。计算路径 2。为路径显示一个面板 3。将面板显示在边框内
+//showflight可以分成三个类：1。Function类，它定义了f()方法，接受一个double值（时间值），返回一个double值（函数值）。
+// 2。将showflight类移入PlotPane类，改为使用Function对象来获取x和y的值，定义PlotPane构造函数接受两个function示例和会话需要的点数
+// 3。将createTitledPanel()方法移到UI工具类
+class showflght extends JPanel{
+//    protected void paintComponent(Graphics g)
+//    {
+//        super.paintComponent(g);//绘制背景
+//        int nPoint=101;
+//        double w=getWidth()-1;
+//        double h=getHeight()-1;
+//        int[] x=new int[nPoint];
+//        int[] y=new int[nPoint];
+//        for(int i=0;i<nPoint;++i)
+//        {
+//            //t从0到1
+//            double t=((double)i)/(nPoint-1);
+//            //x从0到w
+//            x[i]=(int)(t*w);
+//            //当t=0和1时，y=h；当t=0.5时，y=0
+//            y[i]=(int)(4*h*(t-0.5)*(t-0.5));
+//        }
+//        g.drawPolyline(x,y,nPoint);
+//    }
+    protected void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+        int nPoint=101;
+        double w=getWidth()-1;
+        double h=getHeight()-1;
+        double r=Math.min(w,h)/2.0;
+        int[] x=new int[nPoint];
+        int[] y=new int[nPoint];
+        for(int i=0;i<nPoint;++i)
+        {
+            double t=((double)i)/(nPoint-1);
+            double theta=Math.PI*2.0*t;
+            x[i]=(int)(w/2+r*Math.cos(theta));
+            y[i]=(int)(h/2+r*Math.sin(theta));
+        }
+        g.drawPolyline(x,y,nPoint);
+    }
+    public static TitledBorder createTitledBorder(String title)
+    {
+        TitledBorder tb=BorderFactory.createTitledBorder(
+                BorderFactory.createBevelBorder(BevelBorder.RAISED),
+                title,
+                TitledBorder.RIGHT,
+                TitledBorder.TOP
+        );
+        tb.setTitleColor(Color.RED);
+        tb.setTitleFont(getStandardFont());
+        return tb;
+    }
+    public static JPanel createTitledPanel(String title,JPanel in)
+    {
+        JPanel out=new JPanel();
+        out.add(in);
+        out.setBorder(createTitledBorder(title));
+        return out;
+    }
+    public static Font getStandardFont()
+    {
+        return new Font("Dialog",Font.PLAIN,18);
+    }
+}
+
+abstract class Function{
+    public abstract double f(double t);
+}
+
+class YFunction extends Function{
+    public double f(double t)
+    {
+        return 4*t*(1-t);
+    }
+}
+class XFunction extends Function{
+    public double f(double t)
+    {
+        return t;
+    }
+
+}
+
+//UI类也称为外观类
+class UI{
+    public static final UI NORMAL=new UI();
+    protected Font font=new Font("Book Antiqua",Font.PLAIN,18);
+    public Font getFont(){
+        return font;
+    }
+    public TitledBorder createTitleBorder(String title)
+    {
+        TitledBorder border= BorderFactory.createTitledBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED),title,TitledBorder.LEFT,TitledBorder.TOP);
+        border.setTitleColor(Color.BLACK);
+        border.setTitleFont(getFont());
+        return border;
+    }
+    public JPanel createTitledPanel(String title,JPanel in){
+        JPanel out=new JPanel();
+        out.add(in);
+        out.setBorder(createTitleBorder(title));
+        return out;
+    }
+}
+class plotpane extends JPanel{
+    private int points;
+    private int[] xPoints;
+    private int[] yPoints;
+    private Function xFunction;
+    private Function yFunction;
+    public plotpane(int npoint,Function xfunc,Function yfunc)
+    {
+        points=npoint;
+        xPoints=new int[npoint];
+        yPoints=new int[npoint];
+        xFunction=xfunc;
+        yFunction=yfunc;
+        setBackground(Color.WHITE);
+    }
+    protected void paintComponent(Graphics graphics)
+    {
+        double w=getWidth()-1;
+        double h=getHeight()-1;
+
+        for(int i=0;i<points;++i)
+        {
+            double t=((double)i)/(points-1);
+            xPoints[i]=(int)(xFunction.f(t)*w);
+            yPoints[i]=(int)(h*(1-yFunction.f(t)));
+        }
+
+        graphics.drawPolyline(xPoints,yPoints,points);
+    }
+}
+
+public class Main {
+
+    public static void main(String[] args) {
+        showflght flight=new showflght();
+        flight.setPreferredSize(new Dimension(300,200));
+        JPanel panel=showflght.createTitledPanel("Flight path",flight);
+        JFrame frame=new JFrame("Flight path for shell duds");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.getContentPane().add(panel);
+        frame.pack();
+        frame.setVisible(true);
+
+        plotpane p=new plotpane(
+                101,
+                new XFunction(),
+                new YFunction()
+        );
+        p.setPreferredSize(new Dimension(300,200));
+        JFrame framee=new JFrame("flight path for shell duds");
+        framee.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        framee.getContentPane().add(UI.NORMAL.createTitledPanel("Flight Pane",p));
+        framee.pack();
+        framee.setVisible(true);
+
+        Font font=new Font("Dialog",Font.PLAIN,18);
+        UIManager.put("Button.font",font);
+        UIManager.put("Label.font",font);
+        int option;
+        do {
+            //JOptionPane是一个外观类
+            option=JOptionPane.showConfirmDialog(
+                    null,
+                    "Had enough?",
+                    "A stubborn dialog",
+                    JOptionPane.YES_NO_OPTION
+            );
+        }while(option==JOptionPane.NO_OPTION);
+    }
+}
+
+

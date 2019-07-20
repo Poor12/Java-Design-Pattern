@@ -1,0 +1,82 @@
+//访问者模式的意图是在不改变类层次结构的前提下，对该层次结构进行扩展
+
+//定义一个表示访问者的接口
+interface ComputerPartVisitor{
+    public void visit(computer computer);
+    public void visit(mouse mouse);
+    public void visit(keyboard keyboard);
+    public void visit(monitor monitor);
+}
+
+class ComputerPartDisplayVisitor implements ComputerPartVisitor{
+
+    @Override
+    public void visit(computer computer) {
+        System.out.println("Displaying Computer.");
+    }
+
+    @Override
+    public void visit(mouse mouse) {
+        System.out.println("Displaying Mouse.");
+    }
+
+    @Override
+    public void visit(keyboard keyboard) {
+        System.out.println("Displaying Keyboard.");
+    }
+
+    @Override
+    public void visit(monitor monitor) {
+        System.out.println("Displaying Monitor.");
+    }
+}
+//表示元素的接口
+interface ComputerPart{
+    public void accept(ComputerPartVisitor computerPartVisitor);
+}
+
+//上述类的实体类
+class keyboard implements ComputerPart{
+
+    @Override
+    public void accept(ComputerPartVisitor computerPartVisitor) {
+        computerPartVisitor.visit(this);
+    }
+}
+
+class monitor implements ComputerPart{
+
+    @Override
+    public void accept(ComputerPartVisitor computerPartVisitor) {
+        computerPartVisitor.visit(this);
+    }
+}
+
+class mouse implements ComputerPart{
+
+    @Override
+    public void accept(ComputerPartVisitor computerPartVisitor) {
+        computerPartVisitor.visit(this);
+    }
+}
+
+class computer implements ComputerPart{
+
+    ComputerPart[] parts;
+    public computer(){
+        parts=new ComputerPart[]{new mouse(),new keyboard(),new monitor()};
+    }
+    @Override
+    public void accept(ComputerPartVisitor computerPartVisitor) {
+        for (int i=0;i<parts.length;i++){
+            parts[i].accept(computerPartVisitor);
+        }
+    }
+}
+public class Main{
+    public static void main(String[] args){
+        ComputerPart computer=new computer();
+        computer.accept(new ComputerPartDisplayVisitor());
+    }
+
+}

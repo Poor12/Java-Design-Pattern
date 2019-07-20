@@ -1,0 +1,145 @@
+//享元模式在客户对象间提供共享对象，并且为共享对象创建职责，以便普通对象不需要考虑共享对象创建的问题
+//享元模式的意图是通过共享来有效地支持大量细粒度的对象
+
+//Flyweight抽象类，定义出对象的外部状态和内部状态的接口和实现
+abstract class Flyweight{
+    public String intrinsic;//内部状态
+    protected final String extrinsic;//外部状态
+    public Flyweight(String extrinsic){
+        this.extrinsic=extrinsic;
+    }
+    //定义业务
+    public abstract void operate(int extrinsic);
+
+    public String getIntrinsic(){
+        return intrinsic;
+    }
+
+    public void setIntrinsic(String intrinsic){
+        this.intrinsic=intrinsic;
+    }
+
+}
+
+//实现接口，并为内部状态增加存储空间
+class ConcreteFlyweight extends Flyweight{
+    public ConcreteFlyweight(String extrinsic){
+        super(extrinsic);
+    }
+
+    @Override
+    public void operate(int extrinsic) {
+        System.out.println("具体flyweight："+extrinsic);
+    }
+}
+
+class UnsharedConcreteFlyweight extends Flyweight{
+
+    public UnsharedConcreteFlyweight(String extrinsic){
+        super(extrinsic);
+    }
+    @Override
+    public void operate(int extrinsic) {
+        System.out.println("不共享的具体flyweight："+extrinsic);
+    }
+}
+
+//享元工厂
+class FlyweightFactory{
+    //定义一个池容器
+    private static HashMap<String,Flyweight> pool=new HashMap<>();
+
+    public static Flyweight getFlyweight(String extrinsic){
+        Flyweight flyweight=null;
+        if(pool.containsKey(extrinsic)){
+            flyweight=pool.get(extrinsic);
+            System.out.println("已有 "+extrinsic+" 直接从池中取----->");
+        }
+        else{
+            //根据外部状态创建享元对象
+            flyweight=new ConcreteFlyweight(extrinsic);
+            //放入池中
+            pool.put(extrinsic,flyweight);
+            System.out.println("创建 "+extrinsic+" 并从池中取出----->");
+        }
+        return flyweight;
+    }
+
+}
+
+//内部状态指对象共享出来的信息，存储在享元对象内部并且不会随环境的改变而改变；外部状态指对象得以依赖的一个标记，是随环境改变而改变，不可共享的状态
+//例如下棋时，棋子颜色就是内部状态，棋子位置就是外部状态
+//使用场景：1。系统中有大量对象时 2。这些对象消耗大量内存时 3。这些对象的状态大部分可以外部化时
+//优点：1。大大减少了对象的创建，降低了内存的占用 缺点：1。提高系统复杂度，需要分离出内部状态和外部状态
+//应用示例：1。String常量池 2。数据库连接池
+
+
+//网站示例
+abstract class WebSite{
+    public abstract void use(User user);
+}
+
+class ConcreteWebSite extends WebSite{
+    private String name="";
+    public ConcreteWebSite(String name){
+        this.name=name;
+    }
+
+    @Override
+    public void use(User user) {
+        System.out.println("网站分类: "+name+",用户："+user.getName());
+    }
+}
+
+class WebSiteFactory{
+    private HashMap<String,ConcreteWebSite> pool=new HashMap<>();
+    //获得网站分类
+    public WebSite getWebSiteCategory(String key){
+        if(!pool.containsKey(key)){
+            pool.put(key,new ConcreteWebSite(key));
+        }
+        return pool.get(key);
+    }
+    //获得网站分类总数
+    public int getWebSiteCount(){
+        return pool.size();
+    }
+}
+
+class User{
+    private String name;
+    public User(String name){
+        this.name=name;
+    }
+    public String getName(){
+        return name;
+    }
+}
+public class Main{
+    public static void main(String[] args){
+        int extrinsic=22;
+        Flyweight flyweightX=FlyweightFactory.getFlyweight("X");
+        flyweightX.operate(++extrinsic);
+        Flyweight flyweightY=FlyweightFactory.getFlyweight("Y");
+        flyweightY.operate((++extrinsic));
+        Flyweight flyweightZ=FlyweightFactory.getFlyweight("Z");
+        flyweightZ.operate((++extrinsic));
+        Flyweight flyweightReX=FlyweightFactory.getFlyweight("X");
+        flyweightReX.operate(++extrinsic);
+        Flyweight unsharedFlyweight=new UnsharedConcreteFlyweight("X");
+        unsharedFlyweight.operate(++extrinsic);
+
+        WebSiteFactory factory=new WebSiteFactory();
+        WebSite fx=factory.getWebSiteCategory("产品展示");
+        fx.use(new User("adam"));
+        WebSite fy=factory.getWebSiteCategory("产品展示");
+        fy.use(new User("bill"));
+        WebSite fz=factory.getWebSiteCategory("产品展示");
+        fz.use(new User("mary"));
+        WebSite fa=factory.getWebSiteCategory("博客");
+        fa.use(new User("tom"));
+        WebSite fb=factory.getWebSiteCategory("博客");
+        fb.use(new User("henny"));
+        System.out.println("网站分类总数为："+factory.getWebSiteCount());
+    }
+}

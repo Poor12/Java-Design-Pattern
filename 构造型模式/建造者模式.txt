@@ -1,0 +1,79 @@
+//建造者模式，将一个复杂对象的构造与它的表示分离，使同样的构建过程可以创建不同的表示。它将一个复杂的对象分解为多个简单的对象，然后一步一步构建而成，将不变与变相分离，即产品的组成部分是不变的，但每一部分是灵活可变的
+//优点：1。各个具体的建造者相互独立，有利于系统的扩展。2。客户端不必知道产品内部组成的细节
+//缺点：1。产品组成部分必须相同 2。如果产品变化复杂，该模式会增加很多建造者类
+//主要角色：
+//1。产品角色：它是包含多个组成部件的复杂对象，由具体建造者来创建其各个部件
+//2。抽象建造者：它是一个包含创建产品各个子部件的抽象方法的接口，通常还包括一个返回复杂产品的方法
+//3。具体建造者：实现builder接口，完成各个部件的具体创建方法
+//4。指挥者：它调用建造者对象中的部件构造与装配方法完成复杂对象的创建，在指挥者中不涉及具体产品的信息
+
+class Product{
+    private String partA;
+    private String partB;
+    private String partC;
+    public void setPartA(String partA){
+        this.partA=partA;
+    }
+    public void setPartB(String partB){
+        this.partB=partB;
+    }
+    public void setPartC(String partC){
+        this.partC=partC;
+    }
+    public void show(){
+        System.out.println("建造完成");//显示产品特性
+    }
+}
+
+abstract class Builder{
+    //创建产品对象
+    protected Product product=new Product();
+    public abstract void buildPartA();
+    public abstract void buildPartB();
+    public abstract void buildPartC();
+    public Product getResult(){
+        return product;
+    }
+}
+
+class ConcreteBuilder extends Builder{
+
+    @Override
+    public void buildPartA() {
+        product.setPartA("建造PartA");
+    }
+
+    @Override
+    public void buildPartB() {
+        product.setPartB("建造PartB");
+    }
+
+    @Override
+    public void buildPartC() {
+        product.setPartC("建造PartC");
+    }
+}
+
+class Director{
+    private Builder builder;
+    public Director(Builder builder){
+        this.builder=builder;
+    }
+    //产品构建与组装方法
+    public Product construct(){
+        builder.buildPartA();
+        builder.buildPartB();
+        builder.buildPartC();
+        return builder.getResult();
+    }
+}
+
+public class Main{
+    public static void main(String[] args){
+        Builder builder=new ConcreteBuilder();
+        Director director=new Director(builder);
+        Product product=director.construct();
+        product.show();
+
+    }
+}

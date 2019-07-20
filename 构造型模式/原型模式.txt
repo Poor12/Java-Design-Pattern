@@ -1,0 +1,76 @@
+//原型模式：通过复制一个现有的对象来生成新的对象，而不是通过实例化的方式
+//浅拷贝：使用一个已知示例对新创建示例的成员变量逐个赋值，
+//深拷贝：当一个类的拷贝构造方法，不仅要复制对象的所有非引用成员变量，还要为引用类型的成员变量创建新的示例，并且初始化为形式参数实例值
+//主要角色：
+//1。抽象原型类，声明克隆自身的接口
+//2。具体原型类，实现克隆的具体操作
+//3。客户类，让一个原型克隆自身，从而获得一个新的对象
+class PrototypeDemo implements Cloneable{
+    public Object clone(){
+        Object object=null;
+        try{
+            object=super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return object;
+    }
+}
+//clone()方法满足：（1）对任何对象x，都有x.clone()!=x，即克隆对象与原对象不是同一个对象 （2）对任何对象x，都有x.clone().getClass()==x.getClass(),即对象类型一样 （3）如果对象x的equals()方法定义恰当，x.clone().equals(x)应该成立
+
+class Resume implements Cloneable{
+    private String name;
+    private String birthday;
+    private String sex;
+    private String school;
+    private String timeArea;
+    private String company;
+
+    public Resume(String name){
+        this.name=name;
+    }
+
+    public void setPersonInfo(String birthday,String sex,String school)
+    {
+        this.birthday=birthday;
+        this.sex=sex;
+        this.school=school;
+    }
+
+    public void setWorkExperience(String timeArea,String company)
+    {
+        this.timeArea=timeArea;
+        this.company=company;
+    }
+
+    public Object clone(){
+        Resume resume=null;
+        try{
+            resume=(Resume)super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return resume;
+    }
+
+    public void display(){
+        System.out.println("姓名："+name);
+        System.out.println("生日："+birthday+",性别："+sex+"，毕业学校："+school);
+        System.out.println("工作年限："+timeArea+"，公司："+company);
+    }
+
+}
+public class Main{
+    public static void main(String[] args){
+        Resume a=new Resume("小李子");
+        a.setPersonInfo("2.16","男","THU");
+        a.setWorkExperience("2012.09.05","BAT");
+        Resume b=(Resume)a.clone();
+        a.display();
+        System.out.println("---------------------");
+        b.display();
+        System.out.println(a==b);
+        System.out.println(a.getClass()==b.getClass());
+
+    }
+}

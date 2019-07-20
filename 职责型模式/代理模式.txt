@@ -1,0 +1,120 @@
+//´úÀíÄ£Ê½µÄÒâÍ¼ÊÇÍ¨¹ıÌá¹©Ò»¸ö´úÀí»òÕßÕ¼Î»·ûÀ´¿ØÖÆ¶Ô¸Ã¶ÔÏóµÄ·ÃÎÊ
+//¾²Ì¬´úÀí£º×Ô¼º¾²Ì¬¶¨ÒåµÄ´úÀíÀà
+//¶¯Ì¬´úÀí£ºÍ¨¹ı³ÌĞò¶¯Ì¬Éú³É´úÀíÀà
+//¾²Ì¬´úÀíÄ£Ê½£º
+//³éÏó½ÇÉ«£ºÖ¸´úÀí½ÇÉ«ºÍÕæÊµ½ÇÉ«¶ÔÍâÌá¹©µÄ¹«¹²·½·¨
+//ÕæÊµ½ÇÉ«£ºĞèÒªÊµÏÖ³éÏó½ÇÉ«½Ó¿Ú£¬¶¨ÒåÁËÕæÊµ½ÇÉ«ËùĞèÒªµÄÒµÎñÂß¼­£¬ÒÔ±ã¹©´úÀí½ÇÉ«µ÷ÓÃ
+//´úÀí½ÇÉ«£ºĞèÒªÊµÏÖ³éÏó½ÇÉ«½Ó¿Ú£¬Í¨¹ıÕæÊµ½ÇÉ«µÄÒµÎñÂß¼­À´ÊµÏÖ³éÏó·½·¨
+
+interface Star{
+    void confer();
+
+    void signContract();
+
+    void bookTicket();
+
+    void sing();
+
+    void collectMoney();
+}
+
+class ProxyStar implements Star{
+
+    private Star star;
+    @Override
+    public void confer() {
+        System.out.println("ProxyStar.confer()");
+    }
+
+    @Override
+    public void signContract() {
+        System.out.println("ProxyStar.signContract()");
+    }
+
+    @Override
+    public void bookTicket() {
+        System.out.println("ProxyStar.bookTicket()");
+    }
+
+    @Override
+    public void sing() {
+        star.sing();
+    }
+
+    @Override
+    public void collectMoney() {
+        System.out.println("ProxyStar.collectMoney()");
+    }
+
+    public ProxyStar(Star star){
+        this.star=star;
+    }
+}
+
+class RealStar implements Star{
+
+    @Override
+    public void confer() {
+        System.out.println("RealStar.con()");
+    }
+
+    @Override
+    public void signContract() {
+        System.out.println("RealStar.singContract()");
+    }
+
+    @Override
+    public void bookTicket() {
+        System.out.println("RealStar.bookTicket()");
+    }
+
+    @Override
+    public void sing() {
+        //ÕæÕıµÄÒµÎñÂß¼­
+        System.out.println("ÕÅÑ§ÓÑ.sing()");
+    }
+
+    @Override
+    public void collectMoney() {
+        System.out.println("RealStar.collectMoney()");
+    }
+}
+
+//¶¯Ì¬´úÀí´úÂë²»ĞèÒª¶¨Òå´úÀí½ÇÉ«£¬Í¨¹ıÒ»¸ö´¦ÀíÆ÷À´´¦Àí´úÀí½ÇÉ«µÄÒµÎñÂß¼­
+class StarHandler implements InvocationHandler{
+    private Star realStar;
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        Object object=null;
+        System.out.println("ÕæÊµ½ÇÉ«µ÷ÓÃÖ®Ç°µÄ´¦Àíÿÿ");
+        if(method.getName().equals("sing"))
+        {
+            object=method.invoke(realStar,args);//¼¤»îµ÷ÓÃµÄ·½·¨
+        }
+        System.out.println("ÕæÊµ½ÇÉ«µ÷ÓÃÖ®ºóµÄ´¦Àíÿÿ");
+        return object;
+    }
+
+    public StarHandler(Star realStar){
+        super();
+        this.realStar=realStar;
+    }
+}
+public class Main {
+    public static void main(String[] args) {
+        Star real=new RealStar();
+        Star proxy=new ProxyStar(real);
+        proxy.confer();
+        proxy.signContract();
+        proxy.bookTicket();
+        proxy.sing();
+        proxy.collectMoney();
+
+        Star realS=new RealStar();
+        StarHandler handler=new StarHandler(realS);
+        Star proxys=(Star) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(),new Class[]{Star.class},handler);
+        proxys.sing();
+
+    }
+}

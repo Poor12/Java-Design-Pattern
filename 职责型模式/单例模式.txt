@@ -1,0 +1,45 @@
+//可见性
+//public 访问不受限
+//default 只允许包内
+//protected 所在包的类，或者继承该类的子类
+//privated 只允许包含它的类访问
+
+class firework{
+    private double weight=0;
+    private double compare(firework f)
+    {
+        return weight-f.weight;
+    }
+}
+
+//单例模式 将责任集中到某个类的单个示例中
+//单例模式的意图是为了确保有个类且仅有一个示例，并为它提供一个全局访问点
+//设计一个单例类时，需要何时实例化该类的单例对象，一种做法是创建这个类的实例，并作为该类的静态成员变量
+class Singletonex{
+    private static Singletonex singleton=new Singletonex();
+    //延迟初始化的目的
+    //1.在静态初始化时，没有足够信息对单例对象进行初始化
+    //2。选择延迟化单例对象与获取资源有关。
+    public static Singletonex getSingleton(){
+        if(singleton==null){
+            singleton=new Singletonex();
+        }
+        return singleton;
+    }
+    //单例模式与多线程
+    private static Object classLock=Singletonex.class;
+    public static Singletonex getSingleton2(){
+        synchronized (classLock)
+        {
+            if(singleton==null)
+                singleton=new Singletonex();
+            return singleton;
+        }
+    }
+}
+public class Main {
+    public static void main(String[] args) {
+
+    }
+}
+

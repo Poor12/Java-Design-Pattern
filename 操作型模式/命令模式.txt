@@ -1,0 +1,200 @@
+//命令模式的意图是将请求封装在对象内部
+//命令模式把一个请求或者操作封装到一个对象中，命令模式允许系统使用不同的请求把客户端参数化，对请求排队或者记录请求日志，可以提供命令的撤销和恢复功能
+//命令模式是对命令的封装，命令模式把发出命令的责任和执行命令的责任分割开，委派给不同的对象
+//每一个命令都是操作：请求的一方发出请求要求执行一个操作；接受的一方收到请求，执行操作，命令模式允许请求的一方和接受的一方独立开来，使得请求的一方不必知道接受请求的一方的接口
+//主要角色：
+//1。客户端，创建一个ConcreCommand，并设置其接受者
+//2。命令角色，为所有的命令申明一个接口，调用命令对象的execute方法就可以让接受者执行相关的动作，同事接口还具备一个undo()撤回方法
+//3。具体命令角色：定义一个接受者和行为之间的弱耦合；实现execute()负责调用接受者的相应操作，execute通常叫做执行方法，调用者只需调用执行方法就可以发出请求，然后由concrete command调用接受者的一个或多个动作
+//4。调用者：调用者持有一个命令对象，提供一个触发execute方法，将命令执行
+//5。接受者：负责具体实施和执行一个请求
+//用于工作队列和线程池
+//接受者
+class Light{
+    public void on(){
+        System.out.println("打开电灯");
+    }
+    public void off(){
+        System.out.println("关灯 ");
+    }
+}
+
+class Stero{
+    public void on(){
+        System.out.println("打开音响");
+    }
+    public void off(){
+        System.out.println("关闭音响");
+    }
+    public void setCD(){
+        System.out.println("放入CD");
+    }
+    public void setVolume(){
+        System.out.println("音响音量设置为20");
+    }
+}
+
+//命令角色
+interface Command{
+    void execute();
+    void undo();
+}
+
+class LightOnCommand implements Command{
+    private Light light;
+
+    @Override
+    public void execute() {
+        light.on();
+    }
+
+    @Override
+    public void undo() {
+        light.off();
+    }
+
+    public void setLight(Light light){
+        this.light=light;
+    }
+}
+
+class LightOffCommand implements Command{
+
+    private Light light;
+    @Override
+    public void execute() {
+        light.off();
+    }
+
+    @Override
+    public void undo() {
+        light.on();
+    }
+
+    public void setLight(Light light) {
+        this.light = light;
+    }
+}
+
+class SteroOnCommand implements Command{
+
+    private Stero stero;
+    @Override
+    public void execute() {
+        stero.on();
+        stero.setCD();
+        stero.setVolume();
+    }
+
+    @Override
+    public void undo() {
+        stero.off();
+    }
+
+    public void setStero(Stero stero){
+        this.stero=stero;
+    }
+}
+
+class SteroOffCommand implements Command{
+
+    private Stero stero;
+    @Override
+    public void execute() {
+        stero.off();
+    }
+
+    @Override
+    public void undo() {
+        stero.on();
+        stero.setCD();
+        stero.setVolume();
+    }
+
+    public void setStero(Stero stero) {
+        this.stero = stero;
+    }
+}
+
+//调用者
+class RemoteControl{
+    private Command[] onCommands;
+    private Command[] offCommands;
+
+    //用来保存前一个命令，实现撤销
+    private Command undoCommand;
+
+    public RemoteControl(){
+        onCommands=new Command[3];
+        offCommands=new Command[3];
+        Command noCommand=new Command() {
+            @Override
+            public void execute() {
+                System.out.println("nothing happened");
+            }
+
+            @Override
+            public void undo() {
+                System.out.println("nothing happened");
+            }
+        };
+        for(int i=0;i<3;++i){
+            onCommands[i]=noCommand;
+            offCommands[i]=noCommand;
+        }
+        undoCommand=noCommand;
+    }
+
+    public void setCommand(int slot,Command onCommand,Command offCommand){
+        onCommands[slot]=onCommand;
+        offCommands[slot]=offCommand;
+    }
+
+    public void pressOnButton(int slot){
+        onCommands[slot].execute();
+        undoCommand=onCommands[slot];
+    }
+
+    public void pressOffButton(int slot){
+        offCommands[slot].execute();
+        undoCommand=offCommands[slot];
+    }
+
+    public void pressUndoButton(){
+        undoCommand.undo();
+    }
+
+    @Override
+    public String toString() {
+        return "RemoteControl{"+"onCommands="+ Arrays.toString(onCommands)+",offCommands="+Arrays.toString(offCommands)+"}";
+    }
+}
+
+//客户端角色
+public class Main{
+    public static void main(String[] args){
+        RemoteControl remoteControl=new RemoteControl();
+        Light light=new Light();
+        LightOnCommand lightOnCommand=new LightOnCommand();
+        lightOnCommand.setLight(light);
+        LightOffCommand lightOffCommand=new LightOffCommand();
+        lightOffCommand.setLight(light);
+
+        remoteControl.setCommand(0,lightOnCommand,lightOffCommand);
+
+        Stero stero=new Stero();
+        SteroOnCommand steroOnCommand=new SteroOnCommand();
+        steroOnCommand.setStero(stero);
+        SteroOffCommand steroOffCommand=new SteroOffCommand();
+        steroOffCommand.setStero(stero);
+
+        remoteControl.setCommand(1,steroOnCommand,steroOffCommand);
+
+        System.out.println("---------------回家了--------------");
+        remoteControl.pressOnButton(0);
+        remoteControl.pressOnButton(1);
+        remoteControl.pressUndoButton();
+        remoteControl.pressOnButton(2);
+
+    }
+}
